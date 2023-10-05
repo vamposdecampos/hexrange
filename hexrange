@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import sys
+import re
+
+HEX_RE = re.compile(r'0x([0-9a-f]{4,})-0x([0-9a-f]{4,})', re.I)
+
+# based on https://stackoverflow.com/a/1094933
+def sizeof_fmt(num, suffix=""):
+    for unit in ("", "K", "M", "G", "T", "P", "E", "Z"):
+        if num & 0x3ff:
+            return f"{num}{unit}{suffix}"
+        num >>= 10
+    return f"{num}Y{suffix}"
+
+def rep(m):
+    a, b = m.span()
+    orig = m.string[a:b]
+    start_s, end_s = m.groups()
+    start = int(start_s, 16)
+    end = int(end_s, 16)
+    if end < start:
+        return orig
+    return "%s [size=%s]" % (orig, sizeof_fmt(end-start+1))
+
+if __name__ == "__main__":
+    for line in sys.stdin:
+        sys.stdout.write(HEX_RE.sub(rep, line))
